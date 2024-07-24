@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, make_response, render_template, jsonify
 import requests
 import os
 from dotenv import load_dotenv
@@ -27,11 +27,15 @@ def get_paths():
             for entry in data:
                 for path in entry.get('paths', []):
                         all_data.append({'url': api_url, 'path': path})
-    return jsonify(all_data)
+    resp = make_response(jsonify(all_data))
+    resp.headers['X-Powered-By'] = 'namlq01'
+    return resp
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    resp = make_response(render_template('index.html'))
+    resp.headers['X-Powered-By'] = 'namlq01'
+    return resp
 
 if __name__ == '__main__':
     app.run(debug=True)

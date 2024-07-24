@@ -1,11 +1,9 @@
-<!-- Nam Le
-namlq01 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Path Filter</title>
+    <title>KONG Checker Paths</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -41,8 +39,8 @@ namlq01 -->
 </head>
 <body>
     <div class="container">
-        <h1>Filter Paths</h1>
-        <input type="text" id="filterInput" placeholder="Type to filter paths...">
+        <h1>KONG Checker Paths</h1>
+        <input type="text" id="filterInput" placeholder="Type to check paths...">
         <table>
             <thead>
                 <tr>
@@ -64,26 +62,31 @@ namlq01 -->
                 const displayPaths = (paths) => {
                     pathList.innerHTML = '';
                     let previousUrl = '';
+                    let previousRow = null;
                     let rowspan = 1;
 
                     paths.forEach((item, index) => {
                         const tr = document.createElement('tr');
-                        const tdUrl = document.createElement('td');
                         const tdPath = document.createElement('td');
-
                         tdPath.textContent = item.path;
 
                         if (item.url === previousUrl) {
                             rowspan++;
-                            // Merge with previous row
-                            const prevRow = pathList.lastElementChild;
-                            prevRow.children[0].rowSpan = rowspan;
+                            // Update rowspan of the first cell in the previous row
+                            if (previousRow) {
+                                previousRow.children[0].rowSpan = rowspan;
+                            }
                         } else {
-                            tdUrl.textContent = item.url;
+                            const tdUrl = document.createElement('td');
+                            tdUrl.textContent = item.url.toString().match(/^(?:https?:\/\/)?(?:www\.)?([^\/:]+)/,"$1")[1];
+                            tdUrl.rowSpan = 1;
+                            tr.appendChild(tdUrl);
+
+                            // Reset rowspan count
                             rowspan = 1;
+                            previousRow = tr;
                         }
 
-                        tr.appendChild(tdUrl);
                         tr.appendChild(tdPath);
                         pathList.appendChild(tr);
 
@@ -108,3 +111,5 @@ namlq01 -->
     </script>
 </body>
 </html>
+<!-- Nam Le
+namlq01 -->
