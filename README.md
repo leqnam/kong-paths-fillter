@@ -1,3 +1,9 @@
+# KONG Checker Path
+
+The tool to get all paths that configured in KONGs.
+
+![](templates/1.jpg "")
+
 ## Create a virtual environment 
 ```
 python -m venv env
@@ -22,4 +28,18 @@ pip install -r requirements.txt
 python app.py
 ```
 
+`.env`
+
+List of KONG routes
+```
+API_URLS=http://192.168.0.253:8080/kong/1.json,http://192.168.0.253:8080/kong/2.json
+```
+
 ## Deployment
+
+### Docker
+```
+docker run -p 5000:5000 --env-file "C:\.env" kong-paths-fillter:0.0.2-alpha
+```
+
+### K8s
