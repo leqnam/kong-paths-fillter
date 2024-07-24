@@ -38,6 +38,10 @@ API_URLS=http://192.168.0.253:8080/kong/1.json,http://192.168.0.253:8080/kong/2.
 ## Deployment
 
 ### Docker
+
+The pre-built image is: https://hub.docker.com/r/leqnam/kong-paths-fillter/tags
+
+Run in Docker:
 ```
 docker run -p 5000:5000 --env-file "C:\.env" kong-paths-fillter:0.0.2-alpha
 ```
