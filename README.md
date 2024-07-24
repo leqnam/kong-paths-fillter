@@ -43,7 +43,8 @@ The pre-built image is: https://hub.docker.com/r/leqnam/kong-paths-fillter/tags
 
 Run in Docker:
 ```
-docker run -p 5000:5000 --env-file "C:\.env" kong-paths-fillter:0.0.2-alpha
+docker pull leqnam/kong-paths-fillter:0.0.2-alpha
+docker run -p 5000:5000 --env-file "C:\.env" leqnam/kong-paths-fillter:0.0.2-alpha
 ```
 
 ### K8s
