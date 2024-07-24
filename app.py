@@ -14,7 +14,7 @@ print(api_urls)
 def fetch_data(api_url):
     response = requests.get(api_url)
     if response.status_code == 200:
-        return response.json()
+        return response.json().get('data', [])
     else:
         return None
 
@@ -24,13 +24,10 @@ def get_paths():
     for api_url in api_urls:
         data = fetch_data(api_url)
         if data:
-            all_data.extend(data['data'])
-
-    paths = []
-    for entry in all_data:
-        paths.extend(entry['paths'])
-
-    return jsonify(paths)
+            for entry in data:
+                for path in entry.get('paths', []):
+                        all_data.append({'url': api_url, 'path': path})
+    return jsonify(all_data)
 
 @app.route('/')
 def index():
