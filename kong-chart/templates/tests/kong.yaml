@@ -1,0 +1,12 @@
+_format_version: '1.1'
+services:
+- host: {{ .Values.name }}
+  name: {{ .Values.name }}
+  path: {{ .Values.services.path }}
+  protocol: {{ .Values.services.protocol }}
+  routes:
+    {{- include "kong-chart.route" $ | trim  | nindent 2 }}
+upstreams:
+    {{- include "kong-chart.upstream" $ }}
+  targets:
+    {{- include "kong-chart.targetsUpstream" $ | trim  | nindent 2 }}
