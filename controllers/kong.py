@@ -24,8 +24,11 @@ def get_paths():
                 for path in paths:
                     ports_url = api_url.split('/routes')[0] + f"/upstreams/{entry['name']}/targets"
                     print(ports_url)
-                    ports = get_ports(ports_url)
-                    all_data.append({'url': api_url,'svc': svc, 'path': path, 'port': ports})
+                    try:
+                        ports = get_ports(ports_url) 
+                        all_data.append({'url': api_url,'svc': svc, 'path': path, 'port': ports})
+                    except:
+                        all_data.append({'url': api_url,'svc': svc, 'path': path, 'port': 'null' })
     resp = make_response(jsonify(all_data))
     return resp
 
@@ -59,15 +62,17 @@ def get_ports(api_url):
         response.raise_for_status()  # Raise HTTPError for bad responses (4xx and 5xx)
         json_response = response.json()
         targets = json_response.get('data', [])
+        if not targets:  # If the 'data' list is empty, return null (None in Python)
+            return None
         
-#        ports = []
+        port = []
         for target in targets:
             target_str = target.get('target', '')
             # Extract the port using split
             if ':' in target_str:
                 port = target_str.split(':')[1]
                 # ports.append(port)
-        return port
+        return port if port else None
     except requests.exceptions.RequestException as e:
         print(f"Error fetching data from {api_url}: {e}")
         return []
