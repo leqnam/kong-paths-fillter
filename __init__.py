@@ -1,15 +1,21 @@
+import pathlib
 from flask import Flask
+from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
 
-#from .config import config
-
+basedir = pathlib.Path(__file__).parent.resolve()
 db = SQLAlchemy()
 migrate = Migrate()
 
-def create_db_connect():
-    app = Flask(__name__)
+def create_app():
+    app = Flask(__name__,
+        template_folder="templates",
+        static_folder="static")
+    
+    load_dotenv()
+
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
             'DATABASE_URL', 'postgresql://kong:kong@localhost:5432/kong'
         )  
@@ -18,4 +24,11 @@ def create_db_connect():
     db.init_app(app)
     migrate.init_app(app, db)
 
+    # Import routes explicitly
+    from routes.kong import register_routes
+
+    # Register the routes with the app
+    register_routes(app)
+
     return app
+
