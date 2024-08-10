@@ -3,6 +3,7 @@ from flask import Flask
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+import os
 
 basedir = pathlib.Path(__file__).parent.resolve()
 db = SQLAlchemy()
@@ -24,7 +25,7 @@ def create_app():
     migrate.init_app(app, db)
 
     # Import routes explicitly
-    from routes.filter import register_routes
+    from routes.kong import register_routes
 
     # Register the routes with the app
     register_routes(app)

@@ -1,6 +1,5 @@
 
 from flask import Flask, make_response, render_template, jsonify, request
-import requests
 from controllers.kong import get_svc, get_paths, get_ports
 from controllers.apicontroller import create_yaml, update_yaml, delete_yaml
 
