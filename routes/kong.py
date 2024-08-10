@@ -1,5 +1,5 @@
 
-from flask import Flask, make_response, render_template, jsonify, request
+from flask import Flask, make_response, render_template, jsonify, request, method
 from controllers.kong import get_svc, get_paths, get_ports
 from controllers.apicontroller import create_yaml, update_yaml, delete_yaml
 
@@ -20,10 +20,11 @@ def register_routes(app):
     def svc():
         return create_yaml()
     
-    @app.route('/svc/<helm_id>', methods=['PUT'])
+    @app.route('/svc/<helm_id>', methods=['PUT','DELETE'])
     def putsvc(helm_id):
-        return update_yaml(helm_id)
-    
-    @app.route('/svc/<helm_id>', methods=['DELETE'])
-    def delsvc(helm_id):
-        return delete_yaml(helm_id)
+        if method == 'PUT':
+            return update_yaml(helm_id)
+        if method == 'DELETE':
+            return delete_yaml(helm_id)
+        else:
+            return jsonify({'error': 'Method not allow !!!!.'}), 405

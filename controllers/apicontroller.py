@@ -79,7 +79,7 @@ def update_yaml(helm_id):
                     #     yaml_content = f.read()
                 # git_act = git_action(git_url, 'create', helm_output)  # Pass content 
                 # return git_act
-                update_yaml_entry, status_code = update_yaml(helm_id, base64.b64encode(helm_output.encode()).decode())
+                update_yaml_entry, status_code = update_kong(helm_id, base64.b64encode(helm_output.encode()).decode())
                 return(update_yaml_entry), status_code
                 
 #                 return jsonify({'message': 'Kong data config sucessfully create !!!', 'id': new_yaml_entry }), 201
