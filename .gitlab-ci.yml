@@ -1,0 +1,52 @@
+# Include Gitlab CI/CD Shared Library
+include:
+  - project: 'DevOps/gitlab-templates'
+    ref: master
+    file: '/ci-templates/CI.workflow.yml'
+
+
+# Project environment
+variables:
+  IMAGE_NAME: kong-apiops
+  PROJECT_NAME: nghind01
+  DOCKERFILE: Dockerfile
+
+
+Build Image:
+  stage: 📦 Package
+  before_script:
+    - export PACKAGE_VERSION=$(grep '^## v' CHANGELOG.md | head -n 1 | sed 's/^## v\(.*\)$/\1/')-${CI_COMMIT_SHA:0:8}
+    - echo ${CI_REGISTRY_URL}/${PROJECT_NAME}/${CI_PROJECT_NAME}/$IMAGE_NAME:$PACKAGE_VERSION
+    - export ARTIFACT_FULLNAME=`echo ${CI_REGISTRY_URL}/${PROJECT_NAME}/${CI_PROJECT_NAME}/$IMAGE_NAME:$PACKAGE_VERSION`
+#    - export SECURE_ARTIFACT_FULLNAME=`echo ${SECURE_REGISTRY_URL}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/$IMAGE_NAME:$PACKAGE_VERSION`
+  script:
+    #- export LATEST_IMAGE=`echo ${CI_REGISTRY_URL}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/$IMAGE_NAME:latest`
+    - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PWD} ${REGISTRY_URL}
+    - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PWD} ${REGISTRY_HUB_URL}
+    - docker login -u ${REGISTRY_USER} -p ${CI_REGISTRY_PWD} ${CI_REGISTRY_URL}
+    - docker login -u ${SECURE_REGISTRY_USER} -p ${SECURE_REGISTRY_PWD} ${SECURE_REGISTRY_URL}
+
+    - docker build --rm --network host
+        --build-arg HTTP_PROXY=${HTTP_PROXY}
+        --build-arg HTTPS_PROXY=${HTTPS_PROXY}
+        --build-arg NO_PROXY=${NO_PROXY}
+        -t ${ARTIFACT_FULLNAME}
+        -f $DOCKERFILE .
+
+    # - docker tag ${ARTIFACT_FULLNAME} ${SECURE_ARTIFACT_FULLNAME}
+    # - docker tag ${ARTIFACT_FULLNAME} ${LATEST_IMAGE}
+    - echo ${ARTIFACT_FULLNAME}
+    # - echo ${SECURE_ARTIFACT_FULLNAME}
+
+    - docker push ${ARTIFACT_FULLNAME}
+ #   - docker push ${SECURE_ARTIFACT_FULLNAME}
+    #- docker push ${LATEST_IMAGE}
+
+    - docker rmi ${ARTIFACT_FULLNAME}
+    # - docker rmi ${SECURE_ARTIFACT_FULLNAME}
+
+  only:
+    - master
+    - develop
+
+

@@ -40,76 +40,118 @@
 <body>
     <div class="container">
         <h1>KONG Checker Paths</h1>
-        <input type="text" id="filterInput" placeholder="Type to check paths...">
+        <input type="text" id="filterInput" placeholder="Type to check paths or ports...">
+        <div id="loading" style="display: none;">Loading...</div>
         <table>
             <thead>
                 <tr>
                     <th>KONG</th>
+                    <th>ENV</th>
+                    <th>Service Name</th>
                     <th>Path</th>
+                    <th>Port</th>
                 </tr>
             </thead>
             <tbody id="pathList"></tbody>
         </table>
     </div>
     <script>
-        fetch('/paths')
-            .then(response => response.json())
-            .then(data => {
-                const paths = data;
-                const filterInput = document.getElementById('filterInput');
-                const pathList = document.getElementById('pathList');
+        const envMap = {
+            'http://10.26.129.137:8001/routes': 'INT UAT3',
+            'http://10.26.129.135:8001/routes': 'INT SIT2',
+            'http://10.26.129.133:8001/routes': 'INT DEV2',
+            'http://10.26.129.169:8001/routes': 'EXT UAT3',
+            'http://10.26.129.167:8001/routes': 'EXT SIT2',
+            'http://10.26.129.165:8001/routes': 'EXT DEV2'
+        };
 
-                const displayPaths = (paths) => {
-                    pathList.innerHTML = '';
-                    let previousUrl = '';
-                    let previousRow = null;
-                    let rowspan = 1;
+        const getEnv = (url) => {
+            return envMap[url] || 'Unknown';
+        };
 
-                    paths.forEach((item, index) => {
-                        const tr = document.createElement('tr');
-                        const tdPath = document.createElement('td');
-                        tdPath.textContent = item.path;
+        const showLoading = () => {
+            document.getElementById('loading').style.display = 'block';
+        };
 
-                        if (item.url === previousUrl) {
-                            rowspan++;
-                            // Update rowspan of the first cell in the previous row
-                            if (previousRow) {
-                                previousRow.children[0].rowSpan = rowspan;
+        const hideLoading = () => {
+            document.getElementById('loading').style.display = 'none';
+        };
+
+        const fetchData = () => {
+            showLoading();
+            fetch('/paths')
+                .then(response => response.json())
+                .then(data => {
+                    hideLoading();
+                    const paths = data;
+                    const filterInput = document.getElementById('filterInput');
+                    const pathList = document.getElementById('pathList');
+
+                    const displayPaths = (paths) => {
+                        pathList.innerHTML = '';
+                        let previousUrl = '';
+                        let previousRow = null;
+                        let rowspan = 1;
+
+                        paths.forEach((item, index) => {
+                            const tr = document.createElement('tr');
+                            const tdPath = document.createElement('td');
+                            const tdPort = document.createElement('td');
+                            const tdSvc = document.createElement('td');
+                            tdPath.textContent = item.path;
+                            tdPort.textContent = item.port;
+                            tdSvc.textContent = item.svc;
+
+                            if (item.url === previousUrl) {
+                                rowspan++;
+                                if (previousRow) {
+                                    previousRow.children[0].rowSpan = rowspan;
+                                    previousRow.children[1].rowSpan = rowspan;
+                                }
+                            } else {
+                                const tdUrl = document.createElement('td');
+                                tdUrl.textContent = item.url.toString().match(/^(?:https?:\/\/)?(?:www\.)?([^\/:]+)/)[1];
+                                tdUrl.rowSpan = 1;
+                                tr.appendChild(tdUrl);
+
+                                const tdEnv = document.createElement('td');
+                                tdEnv.textContent = getEnv(item.url);
+                                tdEnv.rowSpan = 1;
+                                tr.appendChild(tdEnv);
+
+                                rowspan = 1;
+                                previousRow = tr;
                             }
+
+                            tr.appendChild(tdSvc);
+                            tr.appendChild(tdPath);
+                            tr.appendChild(tdPort);
+                            pathList.appendChild(tr);
+
+                            previousUrl = item.url;
+                        });
+                    };
+
+                    filterInput.addEventListener('input', () => {
+                        const filterValue = filterInput.value.toLowerCase();
+
+                        let filteredPaths;
+                        if (!isNaN(filterValue) && filterValue.trim() !== '') {
+                            filteredPaths = paths.filter(item => item.port.includes(filterValue));
                         } else {
-                            const tdUrl = document.createElement('td');
-                            tdUrl.textContent = item.url.toString().match(/^(?:https?:\/\/)?(?:www\.)?([^\/:]+)/,"$1")[1];
-                            tdUrl.rowSpan = 1;
-                            tr.appendChild(tdUrl);
-
-                            // Reset rowspan count
-                            rowspan = 1;
-                            previousRow = tr;
+                            filteredPaths = paths.filter(item => item.path.toLowerCase().includes(filterValue));
                         }
-
-                        tr.appendChild(tdPath);
-                        pathList.appendChild(tr);
-
-                        previousUrl = item.url;
+                        displayPaths(filteredPaths);
                     });
-                };
 
-                filterInput.addEventListener('input', () => {
-                    const filterValue = filterInput.value.toLowerCase();
-                    const filteredPaths = paths.filter(item => item.path.toLowerCase().includes(filterValue));
-                    if (!filterValue) {
-                        displayPaths([]);
-                        return;
-                    }
-                    displayPaths(filteredPaths);
+                    displayPaths(paths);
+                })
+                .catch(error => {
+                    hideLoading();
+                    console.error('Error fetching paths:', error);
                 });
+        };
 
-                // Initially display all paths
-                // displayPaths(paths);
-            })
-            .catch(error => console.error('Error fetching paths:', error));
+        fetchData();
     </script>
 </body>
-</html>
-<!-- Nam Le
-namlq01 -->
