@@ -1,13 +1,16 @@
 from flask import Flask, make_response, render_template, jsonify
 import requests
-import app
-from  controllers.kong_filter import get_paths
-# @app.route('/paths', methods=['GET'])
-# def aaa():
-#     get_paths()
+import os
+from flask import render_template, jsonify
+import requests
+import os
+from controllers.kong_filter import get_paths
 
-from flask import Blueprint
-from  controllers.kong_filter import get_paths
+def register_routes(app):
+    @app.route('/paths', methods=['GET'])
+    def paths():
+        return get_paths()
 
-auth_bp = Blueprint('auth_bp', __name__)
-auth_bp.route('/paths', methods=['GET'])(get_paths)
+    @app.route('/')
+    def index():
+        return render_template('index.html')
